@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker</title>
+    <style>
+        /* --- ƏSAS STİLLƏR --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            padding: 30px;
+            color: #f0f0f0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #2c394b;
+            border-radius: 18px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        /* --- HEADER (Üst Panel) --- */
+        .header {
+            background: linear-gradient(135deg, #1f4068 0%, #00a8e8 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            letter-spacing: 1.5px;
+            margin-bottom: 5px;
+            font-weight: 800;
+        }
+
+        .header p {
+            margin-top: 5px;
+            font-size: 1.1em;
+            color: #d0d0d0;
+        }
+
+        /* --- BAŞLIQLAR --- */
+        h2 {
+            margin-bottom: 25px;
+            margin-top: 15px;
+            color: #00a8e8;
+            font-weight: 600;
+            padding-bottom: 5px;
+            border-bottom: 2px solid rgba(0, 168, 232, 0.5);
+        }
+
+        h3 {
+            color: #ff5722; /* Daha yaxşı ayrılması üçün Narıncı */
+            margin-top: 20px;
+            margin-bottom: 15px;
+            padding-left: 10px;
+            border-left: 3px solid #ff5722;
+        }
+
+        /* --- TABLAR --- */
+        .tabs {
+            display: flex;
+            background: #24303f;
+            border-bottom: 1px solid #444;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 18px;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: #a0a0a0;
+            background: transparent;
+        }
+
+        .tab:hover {
+            background: #2c394b;
+            color: #f0f0f0;
+        }
+
+        .tab.active {
+            background: #2c394b;
+            color: #00a8e8;
+            border-bottom: 3px solid #00a8e8;
+        }
+
+        /* --- FORMLAR VƏ INPUTLAR (YAZI YERLƏRİ) --- */
+        .content {
+            padding: 30px;
+        }
+
+        /* Tab kontentlərini gizlətmək üçün */
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #f0f0f0;
+            font-size: 1.05em;
+            margin-bottom: 8px; /* label altında məsafə */
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            font-size: 16px;
+            color: #ffffff;
+            transition: all 0.3s;
+        }
+
+        ::placeholder {
+            color: #a0a0a0;
+            opacity: 1;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #00a8e8;
+            box-shadow: 0 0 10px rgba(0, 168, 232, 0.8);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* --- DÜYMƏLƏR --- */
+        button {
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, #00a8e8 0%, #0077b6 100%);
+            color: white;
+            padding: 14px 35px;
+            border-radius: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            box-shadow: 0 5px 15px rgba(0, 168, 232, 0.4);
+            transition: all 0.3s;
+            margin-top: 10px; /* Formlarda düymə üzərində məsafə */
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 25px rgba(0, 168, 232, 0.8);
+        }
+
+        /* --- KARTLAR --- */
+        .card {
+            background: #344358;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #444;
+            border-left: 6px solid #ff5722;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin-bottom: 15px;
+        }
+
+        .card h3 {
+            color: #00a8e8;
+            margin-bottom: 12px;
+            font-size: 1.5em;
+            line-height: 1.2;
+        }
+
+        .card p {
+            color: #d0d0d0;
+            margin-bottom: 8px;
+        }
+
+        /* --- DİGƏR --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🎯 Habit Tracker</h1>
+        <p>Vərdişlərinizi izləyin və inkişaf edin!</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('usersSection', this)">İstifadəçilər</button>
+        <button class="tab" onclick="showTab('habitsSection', this)">Vərdişlər</button>
+        <button class="tab" onclick="showTab('entriesSection', this)">Qeydlər & Level</button>
+    </div>
+
+    <div class="content">
+
+        <div id="usersSection" class="section active">
+
+            <h2>Yeni İstifadəçi və İlk Vərdiş Yarat</h2>
+            <p style="margin-bottom: 25px; color: #a0a0a0;">Qeyd: Yeni istifadəçi yaratmaq üçün ən azı bir vərdiş daxil edilməlidir.</p>
+
+            <div id="userCreationForm">
+                <h3>👤 İstifadəçi Məlumatları</h3>
+                <div class="form-group">
+                    <label>Ad:</label>
+                    <input type="text" id="userName" placeholder="Adınızı daxil edin">
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="userEmail" placeholder="Email ünvanınızı daxil edin">
+                </div>
+
+                <hr style="margin: 25px 0; border: 1px solid #444;">
+
+                <h3>🎯 İlk Vərdiş Məlumatları</h3>
+                <div class="form-group">
+                    <label>Vərdiş Adı:</label>
+                    <input type="text" id="userFirstHabitName" placeholder="Məsələn: Kitab oxumaq">
+                </div>
+                <div class="form-group">
+                    <label>Açıqlama:</label>
+                    <textarea id="userFirstHabitDesc" rows="3" placeholder="Vərdiş haqqında qısa məlumat"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Tezlik:</label>
+                    <select id="userFirstHabitFreq">
+                        <option value="DAILY">Gündəlik</option>
+                        <option value="WEEKLY">Həftəlik</option>
+                        <option value="MONTHLY">Aylıq</option>
+                        <option value="CUSTOM">Xüsusi</option>
+                    </select>
+                </div>
+                <button onclick="createUser()">İstifadəçi və Vərdiş Yarat</button>
+            </div>
+
+            <h2 style="margin-top: 40px;">Bütün İstifadəçilər (Qeydlərin Silinməsi)</h2>
+            <div id="usersList"></div>
+        </div>
+
+        <div id="habitsSection" class="section">
+
+            <h2>Mövcud İstifadəçiyə Yeni Vərdiş Əlavə Et</h2>
+            <div id="habitCreationForm">
+                <div class="form-group">
+                    <label>İstifadəçi ID:</label>
+                    <input type="number" id="habitUserId" placeholder="Vərdiş əlavə ediləcək istifadəçinin ID-si">
+                </div>
+                <div class="form-group">
+                    <label>Vərdiş Adı:</label>
+                    <input type="text" id="habitName" placeholder="Məsələn: Səhər idmanı">
+                </div>
+                <div class="form-group">
+                    <label>Açıqlama:</label>
+                    <textarea id="habitDesc" rows="3" placeholder="Vərdiş haqqında qısa məlumat"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Tezlik:</label>
+                    <select id="habitFreq">
+                        <option value="DAILY">Gündəlik</option>
+                        <option value="WEEKLY">Həftəlik</option>
+                        <option value="MONTHLY">Aylıq</option>
+                        <option value="CUSTOM">Xüsusi</option>
+                    </select>
+                </div>
+                <button onclick="createHabit()">Vərdiş Yarat</button>
+            </div>
+
+            <h2 style="margin-top: 40px;">Bütün Vərdişlər (Streak Vəziyyəti)</h2>
+            <div id="habitsList"></div>
+        </div>
+
+        <div id="entriesSection" class="section">
+
+            <h2>Vərdişi Tamamla (Yeni Qeyd Əlavə Et)</h2>
+            <div id="markCompletedForm">
+                <div class="form-group">
+                    <label>İstifadəçi ID:</label>
+                    <input type="number" id="entryUserId" placeholder="İstifadəçi ID">
+                </div>
+                <div class="form-group">
+                    <label>Vərdiş ID:</label>
+                    <input type="number" id="entryHabitId" placeholder="Vərdiş ID">
+                </div>
+                <div class="form-group">
+                    <label>Tarix:</label>
+                    <input type="date" id="entryDate">
+                </div>
+                <button onclick="markHabitCompleted()">Tamamlandı ✓</button>
+            </div>
+
+            <hr style="margin: 40px 0; border: 1px solid #444;">
+
+            <h2>Level Hesablama</h2>
+            <div id="levelCalculationForm">
+                <div class="form-group">
+                    <label>İstifadəçi ID:</label>
+                    <input type="number" id="levelUserId" placeholder="İstifadəçi ID">
+                </div>
+                <button onclick="calculateLevel()">Level Hesabla</button>
+                <div id="levelDisplay"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'http://localhost:8080/habitTrackerAPI';
+
+    // Funksiya: Aktiv tabı dəyişir və müvafiq məlumatları yükləyir
+    function showTab(tabName, element) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+        element.classList.add('active');
+
+        if (tabName === 'usersSection') loadUsers();
+        if (tabName === 'habitsSection') loadHabits();
+        // 'entriesSection' məlumat yükləmir, formları göstərir
+    }
+
+    // ==============================================
+    // 1. İSTİFADƏÇİ FUNKSİYALARI
+    // ==============================================
+
+    async function createUser() {
+        const name = document.getElementById('userName').value;
+        const email = document.getElementById('userEmail').value;
+        const habitName = document.getElementById('userFirstHabitName').value;
+        const habitDescription = document.getElementById('userFirstHabitDesc').value;
+        const frequency = document.getElementById('userFirstHabitFreq').value;
+
+        if (!name || !email || !habitName || !habitDescription) {
+            alert('İstifadəçi adı, email və ilk vərdiş üçün bütün məlumatları doldurun!');
+            return;
+        }
+
+        const userRequest = {
+            name: name.trim(),
+            email: email.trim(),
+            habits: [{
+                habitName: habitName.trim(),
+                habitDescription: habitDescription.trim(),
+                frequency: frequency
+            }]
+        };
+
+        try {
+            const response = await fetch(`${API_BASE}/user/createUser`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userRequest)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server xətası: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+            alert('İstifadəçi və ilk vərdişi yaradıldı! İstifadəçi ID: ' + data.id);
+            loadUsers();
+
+            // Formu təmizləmək
+            document.getElementById('userName').value = '';
+            document.getElementById('userEmail').value = '';
+            document.getElementById('userFirstHabitName').value = '';
+            document.getElementById('userFirstHabitDesc').value = '';
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Xəta: ' + error.message);
+        }
+    }
+
+    async function loadUsers() {
+        const list = document.getElementById('usersList');
+        list.innerHTML = '<div class="loading" style="color:#00a8e8;">Yüklənir...</div>';
+
+        try {
+            const response = await fetch(`${API_BASE}/user/getAllUsers?page=0&size=20`);
+
+            if (!response.ok) throw new Error(`HTTP xətası: ${response.status}`);
+
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                const data = await response.json();
+                list.innerHTML = '';
+
+                if (!data.content || data.content.length === 0) {
+                    list.innerHTML = '<p style="text-align:center;padding:20px;color:#a0a0a0;">Heç bir istifadəçi tapılmadı</p>';
+                    return;
+                }
+
+                const grid = document.createElement('div');
+                grid.className = 'grid';
+
+                data.content.forEach(user => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <h3>👤 ${user.name}</h3>
+                        <p><strong>ID:</strong> ${user.id}</p>
+                        <p><strong>Email:</strong> ${user.email || 'Yoxdur'}</p>
+                        <p><strong>Vərdişlər:</strong> ${user.habits?.length || 0}</p>
+                        <div class="card-actions" style="margin-top: 15px;">
+                            <button class="btn-small btn-danger" onclick="deleteUser(${user.id})">Sil</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+                list.appendChild(grid);
+            } else {
+                const errorText = await response.text();
+                throw new Error(`Server cavabı JSON formatında deyil. Cavab: ${errorText.substring(0, 50)}...`);
+            }
+
+
+        } catch (error) {
+            console.error('Load users error:', error);
+            list.innerHTML = `<p style="color:#ff5252;text-align:center;padding:20px;">İstifadəçiləri yükləyərkən xəta baş verdi: ${error.message}</p>`;
+        }
+    }
+
+    async function deleteUser(id) {
+        if (confirm(`İstifadəçi #${id}-i silmək istədiyinizdən əminsiniz?`)) {
+            try {
+                const response = await fetch(`${API_BASE}/user/deleteUser/${id}`, { method: 'DELETE' });
+                if (!response.ok && response.status !== 204) throw new Error(`Server xətası: ${response.status}`);
+                alert('İstifadəçi silindi!');
+                loadUsers();
+            } catch (error) {
+                console.error("Delete user error:", error);
+                alert('Xəta: ' + error.message);
+            }
+        }
+    }
+
+    async function calculateLevel() {
+        const userId = document.getElementById('levelUserId').value;
+        const display = document.getElementById('levelDisplay');
+        display.innerHTML = '';
+
+        if(!userId) {
+            alert("İstifadəçi ID daxil edin.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}/user/calculate-level/${userId}`, {
+                method: 'POST'
+            });
+
+            if(!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server xətası: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+            let levelInfo = "Məlumat tapılmadı";
+            if(data && Object.keys(data).length > 0) {
+                const levelKey = Object.keys(data)[0];
+                const levelValue = data[levelKey];
+                levelInfo = `${levelValue} (${levelKey})`;
+            }
+
+            display.innerHTML = `<div class="level-display" style="margin-top: 20px;">🏅 Level: ${levelInfo}</div>`;
+        } catch (error) {
+            console.error("Calculate level error:", error);
+            display.innerHTML = `<p style="color:#ff5252; margin-top: 20px;">Xəta: ${error.message}</p>`;
+        }
+    }
+
+
+    // ==============================================
+    // 2. VƏRDİŞ FUNKSİYALARI
+    // ==============================================
+
+    async function createHabit() {
+        const userId = document.getElementById('habitUserId').value;
+        const habitName = document.getElementById('habitName').value;
+        const habitDescription = document.getElementById('habitDesc').value;
+        const frequency = document.getElementById('habitFreq').value;
+
+        if (!userId || !habitName || !habitDescription) {
+            alert("Bütün xanaları doldurun!");
+            return;
+        }
+
+        try {
+            const userResponse = await fetch(`${API_BASE}/user/getUserById/${userId}`);
+            if(!userResponse.ok) throw new Error(`İstifadəçi tapılmadı: ID ${userId}`);
+            const user = await userResponse.json();
+
+            // Dövri referans problemi üçün (Əgər API tərəfində problem yaradırsa)
+            user.habits = null;
+
+            const response = await fetch(`${API_BASE}/habit/createHabit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ habitName, habitDescription, frequency, user })
+            });
+
+            if(!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server xətası: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+            alert('Vərdiş yaradıldı! ID: ' + data.id);
+            loadHabits();
+            document.getElementById('habitName').value = '';
+            document.getElementById('habitDesc').value = '';
+        } catch (error) {
+            console.error("Create habit error:", error);
+            alert('Xəta: ' + error.message);
+        }
+    }
+
+    async function loadHabits() {
+        const list = document.getElementById('habitsList');
+        list.innerHTML = '<div class="loading" style="color:#00a8e8;">Yüklənir...</div>';
+
+        try {
+            const response = await fetch(`${API_BASE}/habit/getAllHabits`);
+            if (!response.ok) throw new Error(`HTTP xətası: ${response.status}`);
+
+            const habits = await response.json();
+            list.innerHTML = '';
+
+            if (!habits || habits.length === 0) {
+                list.innerHTML = '<p style="text-align:center;padding:20px;color:#a0a0a0;">Heç bir vərdiş tapılmadı.</p>';
+                return;
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+
+            habits.forEach(habit => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h3>🎯 ${habit.habitName}</h3>
+                    <p><strong>ID:</strong> ${habit.id}</p>
+                    <p><strong>Sahib ID:</strong> ${habit.user?.id || '?'}</p>
+                    <p>${habit.habitDescription}</p>
+                    <p><strong>Tezlik:</strong> ${habit.frequency}</p>
+                    <div style="margin-top: 10px;">
+                        <span class="streak-badge">🔥 ${habit.currentStreak || 0} gün</span>
+                        <span class="streak-badge">🏆 Max: ${habit.longestStreak || 0}</span>
+                    </div>
+                    <div class="card-actions" style="margin-top: 15px;">
+                        <button class="btn-small btn-danger" onclick="deleteHabit(${habit.id})">Sil</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            list.appendChild(grid);
+        } catch (error) {
+            console.error("Load habits error:", error);
+            list.innerHTML = `<p style="color:#ff5252;text-align:center;padding:20px;">Vərdişləri yükləyərkən xəta baş verdi: ${error.message}</p>`;
+        }
+    }
+
+    async function deleteHabit(id) {
+        if (confirm(`Vərdiş #${id}-i silmək istədiyinizdən əminsiniz?`)) {
+            try {
+                const response = await fetch(`${API_BASE}/habit/deleteHabit/${id}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error(`Server xətası: ${response.status}`);
+                alert('Vərdiş silindi!');
+                loadHabits();
+            } catch (error) {
+                console.error("Delete habit error:", error);
+                alert('Xəta: ' + error.message);
+            }
+        }
+    }
+
+    // ==============================================
+    // 3. QEYD FUNKSİYALARI
+    // ==============================================
+
+    async function markHabitCompleted() {
+        const userId = document.getElementById('entryUserId').value;
+        const habitId = document.getElementById('entryHabitId').value;
+        const date = document.getElementById('entryDate').value;
+
+        if (!userId || !habitId || !date) {
+            alert("Bütün xanaları doldurun!");
+            return;
+        }
+
+        try {
+            const habitResponse = await fetch(`${API_BASE}/habit/getHabitById/${habitId}`);
+            if(!habitResponse.ok) throw new Error(`Vərdiş tapılmadı: ID ${habitId}`);
+            const habit = await habitResponse.json();
+
+            if(habit.user) habit.user.habits = null; // Dövri referansı önləmək
+
+            const response = await fetch(`${API_BASE}/habitEntry/markHabitAsCompleted`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ habitId: habit, date, userId: parseInt(userId) })
+            });
+
+            if(!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server xətası: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+            alert('Vərdiş tamamlandı! 🎉');
+            // Qeyd yaradıldıqdan sonra Vərdişlər bölməsini yeniləyin ki, streak görsənsin
+            if (document.getElementById('habitsSection').classList.contains('active')) {
+                loadHabits();
+            }
+        } catch (error) {
+            console.error("Mark habit error:", error);
+            alert('Xəta: ' + error.message);
+        }
+    }
+
+    // Səhifə yüklənəndə ilkin funksiyalar
+    document.addEventListener('DOMContentLoaded', () => {
+        const dateInput = document.getElementById('entryDate');
+        if(dateInput) {
+            dateInput.valueAsDate = new Date();
+        }
+        // Başlanğıcda İstifadəçilər siyahısını yüklə
+        loadUsers();
+    });
+</script>
+</body>
+</html>
